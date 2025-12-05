@@ -1,6 +1,61 @@
 [package]
 name = "offchain"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
+# Web framework
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# IPFS integration
+ipfs-api-backend-hyper = { version = "0.6", features = ["with-builder"] }
+rust-ipfs-api = "0.17"
+cid = "0.11"
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# Async traits
+async-trait = "0.1"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Environment variables
+dotenvy = "0.15"
+
+# UUID generation
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Hashing (for computing blockchain-compatible hashes)
+sha2 = "0.10"
+sha3 = "0.10"
+hex = "0.4"
+
+# Database (for caching IPFS CIDs and metadata)
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "migrate"], optional = true }
+
+# Validation
+validator = { version = "0.18", features = ["derive"] }
+
+[features]
+default = []
+database = ["sqlx"]
+
+[dev-dependencies]
+mockall = "0.12"

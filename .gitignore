@@ -1,1 +1,4 @@
 /build
+/offchain/target/
+/offchain/Cargo.lock
+offchain/.env.example
