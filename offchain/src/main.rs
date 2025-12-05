@@ -12,7 +12,6 @@ use config::Config;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Initialize tracing
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -21,10 +20,8 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    // Load environment variables
     dotenvy::dotenv().ok();
 
-    // Load configuration
     let config = Config::from_env()?;
 
     tracing::info!(
@@ -33,7 +30,6 @@ async fn main() -> anyhow::Result<()> {
         config.address()
     );
 
-    // Build router
     let app = Router::new()
         .route("/", get(root))
         .route("/health", get(health_check))

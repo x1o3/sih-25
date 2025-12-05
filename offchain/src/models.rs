@@ -1,19 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-/// Example request model
+// request
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExampleRequest {
     pub data: String,
 }
 
-/// Example response model
+// response
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExampleResponse {
     pub success: bool,
     pub message: String,
 }
 
-/// Generic API response wrapper
+// API response
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiResponse<T> {
     pub data: T,

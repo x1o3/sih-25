@@ -4,12 +4,12 @@ use crate::{
 };
 use axum::{extract::Path, Json};
 
-/// Example GET handler with path parameter
+// get
 pub async fn get_example(Path(id): Path<String>) -> Result<Json<ApiResponse<String>>> {
     Ok(Json(ApiResponse::new(format!("Retrieved item: {}", id))))
 }
 
-/// Example POST handler with JSON body
+// post
 pub async fn post_example(
     Json(payload): Json<ExampleRequest>,
 ) -> Result<Json<ApiResponse<ExampleResponse>>> {
@@ -21,7 +21,7 @@ pub async fn post_example(
     Ok(Json(ApiResponse::new(response)))
 }
 
-/// Example handler that returns an error
+// err
 pub async fn error_example() -> Result<Json<ApiResponse<String>>> {
     Err(crate::error::AppError::BadRequest(
         "This is an example error".to_string(),
