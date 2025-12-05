@@ -1,5 +1,6 @@
 /build
 /offchain/target/
 /offchain/Cargo.lock
-offchain/.env.example
+/offchain/.env.example
 /offchain_back
+target/rust-analyzer/flycheck0
