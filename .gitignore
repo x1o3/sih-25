@@ -2,3 +2,4 @@
 /offchain/target/
 /offchain/Cargo.lock
 offchain/.env.example
+/offchain_back
