@@ -4,7 +4,6 @@ use axum::{
     response::IntoResponse,
 };
 use chrono::Utc;
-use serde_json::json;
 use tracing::{debug, info};
 use validator::Validate;
 
@@ -14,8 +13,9 @@ use crate::{error::AppError, models::*, AppState};
 
 pub async fn register_farmer(
     State(state): State<AppState>,
+    // doesnt handle err case yet (need to create wrapper)
     Json(payload): Json<FarmerRegistrationRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Json<FarmerRegistrationResponse>, AppError> {
     // Validate input
     payload
         .validate()
@@ -64,7 +64,7 @@ pub async fn register_farmer(
 pub async fn fpo_purchase(
     State(state): State<AppState>,
     Json(payload): Json<FpoPurchaseRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<(StatusCode, Json<FpoPurchaseResponse>), AppError> {
     // Validate input
     payload
         .validate()
@@ -111,7 +111,7 @@ pub async fn fpo_purchase(
 pub async fn warehouse_update(
     State(state): State<AppState>,
     Json(payload): Json<WarehouseUpdateRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<(StatusCode, Json<WarehouseUpdateResponse>), AppError> {
     // Validate input
     payload
         .validate()
@@ -161,7 +161,7 @@ pub async fn warehouse_update(
 pub async fn logistics_milestone(
     State(state): State<AppState>,
     Json(payload): Json<LogisticsMilestoneRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<(StatusCode, Json<LogisticsMilestoneResponse>), AppError> {
     // Validate input
     payload
         .validate()
@@ -216,7 +216,7 @@ pub async fn logistics_milestone(
 pub async fn process_batch(
     State(state): State<AppState>,
     Json(payload): Json<ProcessBatchRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<(StatusCode, Json<ProcessBatchResponse>), AppError> {
     // Validate input
     payload
         .validate()
@@ -284,7 +284,7 @@ pub async fn process_batch(
 pub async fn create_sku(
     State(state): State<AppState>,
     Json(payload): Json<CreateSkuRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<(StatusCode, Json<CreateSkuResponse>), AppError> {
     // Validate input
     payload
         .validate()
@@ -337,7 +337,7 @@ pub async fn create_sku(
 pub async fn ai_score(
     State(state): State<AppState>,
     Json(payload): Json<AiScoreRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<(StatusCode, Json<AiScoreResponse>), AppError> {
     // Validate input
     payload
         .validate()
@@ -395,7 +395,7 @@ pub async fn ai_score(
 pub async fn upload_to_ipfs(
     State(state): State<AppState>,
     Json(payload): Json<IpfsUploadRequest>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<(StatusCode, Json<IpfsUploadResponse>), AppError> {
     debug!("Uploading generic data to IPFS");
 
     // Upload to IPFS
@@ -422,7 +422,7 @@ pub async fn upload_to_ipfs(
 pub async fn get_from_ipfs(
     State(state): State<AppState>,
     Path(cid): Path<String>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Json<IpfsGetResponse>, AppError> {
     debug!("Fetching data from IPFS: {}", cid);
 
     // Get from IPFS
@@ -436,7 +436,7 @@ pub async fn get_from_ipfs(
 pub async fn pin_ipfs(
     State(state): State<AppState>,
     Path(cid): Path<String>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Json<IpfsPinResponse>, AppError> {
     debug!("Pinning IPFS content: {}", cid);
 
     // Pin the content

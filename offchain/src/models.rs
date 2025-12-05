@@ -5,7 +5,7 @@ use validator::Validate;
 
 // ======================== STAGE 1: FARMER REGISTRATION ========================
 
-#[derive(Debug, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct FarmerRegistrationRequest {
     #[validate(length(min = 1))]
     pub farmer_name: String,
@@ -99,7 +99,7 @@ pub struct FpoPurchaseResponse {
 
 // ======================== STAGE 3: WAREHOUSE STORAGE ========================
 
-#[derive(Debug, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct WarehouseUpdateRequest {
     #[validate(length(min = 1))]
     pub warehouse_id: String,
@@ -150,7 +150,7 @@ pub struct WarehouseUpdateResponse {
 
 // ======================== STAGE 4: LOGISTICS TRACKING ========================
 
-#[derive(Debug, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct LogisticsMilestoneRequest {
     #[validate(length(min = 1))]
     pub shipment_id: String,

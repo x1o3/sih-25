@@ -1,14 +1,13 @@
 use axum::{
-    extract::{Json, Path, State},
-    http::StatusCode,
+    extract::{FromRef, Json},
     response::IntoResponse,
     routing::{get, post},
     Router,
 };
-use serde::{Deserialize, Serialize};
+
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
-use tracing::{info, warn};
+use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod error;
@@ -16,13 +15,19 @@ mod handlers;
 mod ipfs;
 mod models;
 
-use error::AppError;
 use ipfs::IpfsClient;
 
 // Application state
 #[derive(Clone)]
 pub struct AppState {
-    ipfs_client: Arc<IpfsClient>,
+    pub ipfs_client: Arc<IpfsClient>,
+}
+
+// Implement FromRef to allow State extractor to work with AppState
+impl FromRef<AppState> for Arc<IpfsClient> {
+    fn from_ref(state: &AppState) -> Self {
+        state.ipfs_client.clone()
+    }
 }
 
 #[tokio::main]
@@ -67,8 +72,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/v1/ipfs/upload", post(handlers::upload_to_ipfs))
         .route("/api/v1/ipfs/get/:cid", get(handlers::get_from_ipfs))
         .route("/api/v1/ipfs/pin/:cid", post(handlers::pin_ipfs))
-        .layer(CorsLayer::permissive())
-        .with_state(state);
+        .with_state(state)
+        .layer(CorsLayer::permissive());
 
     // Start server
     let addr = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0:3000".to_string());

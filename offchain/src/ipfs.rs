@@ -2,7 +2,7 @@ use anyhow::Result;
 use ipfs_api_backend_hyper::{IpfsApi, IpfsClient as HyperIpfsClient, TryFromUri};
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 use crate::error::AppError;
 
@@ -49,7 +49,7 @@ impl IpfsClient {
 
         Ok(IpfsUploadResponse {
             cid: response.hash,
-            size: response.size,
+            size: response.size.parse().unwrap_or(0),
         })
     }
 
@@ -157,7 +157,8 @@ impl IpfsClient {
         Ok(serde_json::json!({
             "num_objects": stats.num_objects,
             "repo_size": stats.repo_size,
-            "storage_max": stats.storage_max,
+            "repo_path": stats.repo_path,
+            "version": stats.version,
         }))
     }
 }
