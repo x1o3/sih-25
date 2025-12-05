@@ -1,9 +1,28 @@
 pragma solidity ^0.8.19;
 
-// No access control (anyone can call most functions).
+// Gas-optimized on-chain RBAC using bitmap approach
 
 contract OilseedValueChain {
+    // ======================== ACCESS CONTROL (Gas Optimized) ========================
+    // Using bitmap for roles: saves gas vs OpenZeppelin's nested mappings
+    // Each bit represents a role: ADMIN=1, FARMER=2, FPO=4, WAREHOUSE=8, etc.
+
+    uint8 constant ROLE_ADMIN = 1; // 0001
+    uint8 constant ROLE_FARMER = 2; // 0010
+    uint8 constant ROLE_FPO = 4; // 0100
+    uint8 constant ROLE_WAREHOUSE = 8; // 1000
+    uint8 constant ROLE_LOGISTICS = 16; // 10000
+    uint8 constant ROLE_PROCESSOR = 32; // 100000
+    uint8 constant ROLE_PACKAGER = 64; // 1000000
+    uint8 constant ROLE_AI_ORACLE = 128; // 10000000
+
+    mapping(address => uint8) private roles;
+
+    event RoleGranted(address indexed account, uint8 role);
+    event RoleRevoked(address indexed account, uint8 role);
+
     // ======================== CUSTOM ERRORS (Gas Efficient) ========================
+    error Unauthorized();
     error AlreadyRegistered();
     error FarmerNotRegistered();
     error SKUAlreadyExists();
@@ -13,6 +32,43 @@ contract OilseedValueChain {
     error AlreadyRevealed();
     error InvalidReveal();
     error LengthMismatch();
+
+    constructor() {
+        // Grant all roles to deployer
+        roles[msg.sender] = 255; // All bits set
+        emit RoleGranted(msg.sender, 255);
+    }
+
+    // ======================== ACCESS CONTROL FUNCTIONS ========================
+
+    modifier onlyRole(uint8 role) {
+        if (roles[msg.sender] & role == 0) revert Unauthorized();
+        _;
+    }
+
+    function grantRole(
+        address account,
+        uint8 role
+    ) external onlyRole(ROLE_ADMIN) {
+        roles[account] |= role; // Set bit
+        emit RoleGranted(account, role);
+    }
+
+    function revokeRole(
+        address account,
+        uint8 role
+    ) external onlyRole(ROLE_ADMIN) {
+        roles[account] &= ~role; // Clear bit
+        emit RoleRevoked(account, role);
+    }
+
+    function hasRole(address account, uint8 role) external view returns (bool) {
+        return roles[account] & role != 0;
+    }
+
+    function getRoles(address account) external view returns (uint8) {
+        return roles[account];
+    }
 
     // ======================== STAGE 1: FARMER REGISTER ========================
     // On-chain: Minimal farmer DID, crop ID hash
@@ -32,7 +88,10 @@ contract OilseedValueChain {
         uint64 timestamp
     );
 
-    function registerFarmer(bytes32 farmerDID, bytes32 cropIDHash) external {
+    function registerFarmer(
+        bytes32 farmerDID,
+        bytes32 cropIDHash
+    ) external onlyRole(ROLE_FARMER) {
         if (farmers[farmerDID].registeredAt != 0) revert AlreadyRegistered();
 
         uint64 timestamp = uint64(block.timestamp);
@@ -64,7 +123,10 @@ contract OilseedValueChain {
         uint8 transferType
     );
 
-    function fpoPurchase(bytes32 batchHash, bytes32 farmerDID) external {
+    function fpoPurchase(
+        bytes32 batchHash,
+        bytes32 farmerDID
+    ) external onlyRole(ROLE_FPO) {
         if (farmers[farmerDID].registeredAt == 0) revert FarmerNotRegistered();
 
         emit OwnershipTransfer(
@@ -97,7 +159,7 @@ contract OilseedValueChain {
     function updateWarehouseState(
         bytes32 warehouseId,
         bytes32 stateHash
-    ) external {
+    ) external onlyRole(ROLE_WAREHOUSE) {
         uint64 timestamp = uint64(block.timestamp);
 
         warehouseStates[warehouseId] = WarehouseState({
@@ -124,7 +186,7 @@ contract OilseedValueChain {
         bytes32 shipmentId,
         bytes32 locationHash,
         bool isDelivered
-    ) external {
+    ) external onlyRole(ROLE_LOGISTICS) {
         emit LogisticsMilestone(
             shipmentId,
             locationHash,
@@ -149,7 +211,7 @@ contract OilseedValueChain {
         bytes32 inputBatchHash,
         bytes32 transformHash,
         bytes32[] calldata outputBatchHashes
-    ) external {
+    ) external onlyRole(ROLE_PROCESSOR) {
         emit BatchProcessed(
             inputBatchHash,
             transformHash,
@@ -182,7 +244,7 @@ contract OilseedValueChain {
         bytes32 skuId,
         bytes32 parentBatchHash,
         bytes32 merkleRoot
-    ) external {
+    ) external onlyRole(ROLE_PACKAGER) {
         if (packages[skuId].packagedAt != 0) revert SKUAlreadyExists();
 
         uint64 timestamp = uint64(block.timestamp);
@@ -200,10 +262,11 @@ contract OilseedValueChain {
     // On-chain: Optionally: Retail event hash
     // Off-chain: Full retail analytics
     // Gas saving: Only fraud-trigger events recorded
+    // Note: reportFraud is public - anyone can report potential fraud
 
     event FraudDetected(
         bytes32 indexed skuId,
-        address indexed retailer,
+        address indexed reporter,
         bytes32 evidenceHash,
         uint64 timestamp
     );
@@ -245,7 +308,10 @@ contract OilseedValueChain {
         uint64 timestamp
     );
 
-    function commitAIScore(bytes32 batchHash, bytes32 commitHash) external {
+    function commitAIScore(
+        bytes32 batchHash,
+        bytes32 commitHash
+    ) external onlyRole(ROLE_AI_ORACLE) {
         if (aiScores[batchHash].committedAt != 0) revert AlreadyCommitted();
 
         uint64 timestamp = uint64(block.timestamp);
@@ -260,7 +326,7 @@ contract OilseedValueChain {
         bytes32 batchHash,
         bytes32 revealHash,
         bytes32 nonce
-    ) external {
+    ) external onlyRole(ROLE_AI_ORACLE) {
         AIScore storage score = aiScores[batchHash];
 
         if (score.committedAt == 0) revert NotCommitted();
@@ -284,7 +350,7 @@ contract OilseedValueChain {
     function batchUpdateWarehouse(
         bytes32[] calldata warehouseIds,
         bytes32[] calldata stateHashes
-    ) external {
+    ) external onlyRole(ROLE_WAREHOUSE) {
         uint256 length = warehouseIds.length;
         if (length != stateHashes.length) revert LengthMismatch();
 
@@ -312,7 +378,7 @@ contract OilseedValueChain {
         bytes32[] calldata shipmentIds,
         bytes32[] calldata locationHashes,
         bool[] calldata deliveryStatuses
-    ) external {
+    ) external onlyRole(ROLE_LOGISTICS) {
         uint256 length = shipmentIds.length;
         if (
             length != locationHashes.length || length != deliveryStatuses.length
