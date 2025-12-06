@@ -405,9 +405,7 @@ contract OilseedValueChain {
     function verifyPackageOrigin(
         bytes32 skuId
     )
-        external
-        view
-        returns (bytes32 parentBatchHash, bytes32 merkleRoot, uint64 packagedAt)
+        external view returns (bytes32 parentBatchHash, bytes32 merkleRoot, uint64 packagedAt)
     {
         PackageRecord memory pkg = packages[skuId];
         if (pkg.packagedAt == 0) revert SKUNotFound();
@@ -418,9 +416,7 @@ contract OilseedValueChain {
     function verifyFarmer(
         bytes32 farmerDID
     )
-        external
-        view
-        returns (bool exists, bytes32 cropIDHash, uint64 registeredAt)
+        external view returns (bool exists, bytes32 cropIDHash, uint64 registeredAt)
     {
         FarmerRecord memory farmer = farmers[farmerDID];
         return (
@@ -440,9 +436,7 @@ contract OilseedValueChain {
     function getAIScore(
         bytes32 batchHash
     )
-        external
-        view
-        returns (
+        external view returns (
             bytes32 commitHash,
             bytes32 revealHash,
             uint64 committedAt,
