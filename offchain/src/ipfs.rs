@@ -79,22 +79,22 @@ impl IpfsClient {
         self.upload_bytes(json_bytes).await
     }
 
-    /// Uploads raw bytes to IPFS
-    ///
-    /// Uploads the provided bytes directly to IPFS.
-    /// Returns the CID (Content Identifier) hash as a string.
-    ///
-    /// # Arguments
-    /// * `bytes` - Raw bytes to upload
-    ///
-    /// # Returns
-    /// * `Result<String>` - The CID hash on success
-    ///
-    /// # Example
-    /// ```ignore
-    /// let data = b"Hello, IPFS!".to_vec();
-    /// let cid = ipfs_client.upload_bytes(data).await?;
-    /// ```
+    // Uploads raw bytes to IPFS
+    //
+    // Uploads the provided bytes directly to IPFS.
+    // Returns the CID (Content Identifier) hash as a string.
+    //
+    // # Arguments
+    // * `bytes` - Raw bytes to upload
+    //
+    // # Returns
+    // * `Result<String>` - The CID hash on success
+    //
+    // # Example
+    // ```ignore
+    // let data = b"Hello, IPFS!".to_vec();
+    // let cid = ipfs_client.upload_bytes(data).await?;
+    // ```
     // ???????????????????????????????????????????????????
     pub async fn upload_bytes(&self, bytes: Vec<u8>) -> Result<String> {
         let url = format!("{}/api/v0/add", self.config.api_url);
